@@ -26,4 +26,11 @@ public class CodeEntity {
     private String description;
     private boolean isActive=false;
 
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public void setActive(boolean active) {
+        isActive = active;
+    }
 }

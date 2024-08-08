@@ -7,7 +7,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 class CodePostApplicationTests {
 
 	@Test
-	void contextLoads() {
+	public void testFetchAllLatestVersion(){
+
+
+
+
 	}
 
 }

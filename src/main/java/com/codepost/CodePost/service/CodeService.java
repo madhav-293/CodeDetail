@@ -27,6 +27,8 @@ public class CodeService {
     @Autowired
     CodeRepository codeRepository;
 
+
+
     @Autowired
     KafkaTemplate<String, CodeEntityDTO> kafkaTemplateDetail;
 
@@ -61,26 +63,36 @@ public class CodeService {
 
     public CodeEntity getLatestVersion(String cname) {
         Aggregation aggregation = Aggregation.newAggregation(
-                Aggregation.match(Criteria.where("cname").is(cname)),
-                Aggregation.sort(Sort.by(Sort.Order.desc("version"))),
+                Aggregation.match(Criteria.where("cName").is(cname)),
+                Aggregation.sort(Sort.by(Sort.Direction.DESC,("version"))),
                 Aggregation.limit(1)
         );
 
-        AggregationResults<CodeEntity> results = mongoTemplate.aggregate(aggregation, "codedetail", CodeEntity.class);
-        return results.getUniqueMappedResult();
+        AggregationResults<Document> results = mongoTemplate.aggregate(aggregation, "codedetail", Document.class);
+        Document document = results.getUniqueMappedResult();
+
+        if (document == null) {
+            return null;
+        }
+
+        CodeEntity codeEntity = new CodeEntity();
+        codeEntity.setCName(document.getString("cName"));
+        codeEntity.setVersion(document.getDouble("version"));
+        codeEntity.setDescription(document.getString("description"));
+        codeEntity.setStartDate(document.getString("startDate"));
+        codeEntity.setEndDate(document.getString("endDate"));
+        codeEntity.setActive(document.getBoolean("isActive"));
+
+        return codeEntity;
     }
 
 
     public List<CodeEntity> getAllLatestCode(String status) {
             Aggregation aggregation;
 
-            if (status.equals("")) {
-                // Case 1: When status is an empty string
+            if (status.isBlank()) {
                 aggregation = Aggregation.newAggregation(
-                        // Stage 1: Sort documents by version in descending order
                         Aggregation.sort(Sort.by(Sort.Direction.DESC, "version")),
-
-                        // Stage 2: Group by 'code' and get the latest version for each code
                         Aggregation.group("cName")
                                 .first("cName").as("cName")
                                 .first("description").as("description")
@@ -90,23 +102,19 @@ public class CodeService {
                                 .first("isActive").as("isActive")
                 );
             } else {
-                // Case 2: When status is not an empty string
+
                 aggregation = Aggregation.newAggregation(
-                        // Stage 1: Match documents by 'isActive' status
+
                         Aggregation.sort(Sort.by(Sort.Direction.DESC, "version")),
-                        Aggregation.match(Criteria.where("isActive").is(Boolean.parseBoolean(status))),
-
-                        // Stage 2: Sort documents by version in descending order
-
-
-                        // Stage 3: Group by 'code' and get the latest version for each code
                         Aggregation.group("cName")
                                 .first("cName").as("cName")
                                 .first("description").as("description")
                                 .first("startDate").as("startDate")
                                 .first("version").as("version")
                                 .first("endDate").as("endDate")
-                                .first("isActive").as("isActive")
+                                .first("isActive").as("isActive"),
+                        Aggregation.match(Criteria.where("isActive").is(Boolean.parseBoolean(status)))
+
 
                 );
             }
@@ -117,59 +125,6 @@ public class CodeService {
 
 
     }
-//
-//        if(!value.isBlank()){
-//            Aggregation aggregation = Aggregation.newAggregation(
-//
-//                    Aggregation.match(Criteria.where("isActive").is(Boolean.parseBoolean(value))),
-//                    // Sort by cName and version descending
-//                    Aggregation.sort(Sort.by(Sort.Direction.DESC,"version")),
-//                    // Group by cName and get the first document in each group
-//                    Aggregation.group("cName")
-//                            .first("cName").as("cName")
-//                            .first("version").as("version")
-//                            .first("startDate").as("startDate")
-//                            .first("endDate").as("endDate")
-//                            .first("description").as("description")
-//                            .first("isActive").as("isActive"),
-//
-//                    Aggregation.project("cName","version","startDate","endDate","description","isActive")
-//            );
-//
-//            // Execute the Aggregation
-//            AggregationResults<CodeEntity> results = mongoTemplate.aggregate(
-//                    aggregation,
-//                    "codedetail",
-//                    CodeEntity.class
-//            );
-//
-//            // Return the Results
-//            return results.getMappedResults();
-//        }
-//
-//        Aggregation aggregation = Aggregation.newAggregation(
-//                // Sort by cName and version descending
-//                Aggregation.sort(Sort.by(Sort.Order.desc("cName"), Sort.Order.desc("version"))),
-//
-//                // Group by cName and get the first document in each group
-//                Aggregation.group("cName")
-//                        .first("cName").as("cName")
-//                        .first("version").as("version")
-//                        .first("startDate").as("startDate")
-//                        .first("endDate").as("endDate")
-//                        .first("description").as("description")
-//                        .first("isActive").as("isActive")
-//        );
-//
-//        // Execute the Aggregation
-//        AggregationResults<CodeEntity> results = mongoTemplate.aggregate(
-//                aggregation,
-//                "codedetail",
-//                CodeEntity.class
-//        );
-//
-//        // Return the Results
-//        return results.getMappedResults();
-//    }
+
 
 
