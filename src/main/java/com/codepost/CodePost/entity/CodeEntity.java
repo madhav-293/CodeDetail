@@ -1,6 +1,7 @@
 package com.codepost.CodePost.entity;
 
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
@@ -11,6 +12,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 @Document(collection = "codedetail")
 @CompoundIndexes({
         @CompoundIndex(name = "cName_version_idx", def = "{'cName': 1, 'version': 1}", unique = true)

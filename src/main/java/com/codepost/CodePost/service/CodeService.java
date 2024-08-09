@@ -89,7 +89,6 @@ public class CodeService {
 
     public List<CodeEntity> getAllLatestCode(String status) {
             Aggregation aggregation;
-
             if (status.isBlank()) {
                 aggregation = Aggregation.newAggregation(
                         Aggregation.sort(Sort.by(Sort.Direction.DESC, "version")),
@@ -101,6 +100,7 @@ public class CodeService {
                                 .first("endDate").as("endDate")
                                 .first("isActive").as("isActive")
                 );
+                System.out.println("blank Status");
             } else {
 
                 aggregation = Aggregation.newAggregation(
@@ -114,8 +114,6 @@ public class CodeService {
                                 .first("endDate").as("endDate")
                                 .first("isActive").as("isActive"),
                         Aggregation.match(Criteria.where("isActive").is(Boolean.parseBoolean(status)))
-
-
                 );
             }
 

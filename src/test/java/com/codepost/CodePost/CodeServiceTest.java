@@ -1,11 +1,9 @@
 package com.codepost.CodePost;
 
-import com.codepost.CodePost.config.AppConstant;
 import com.codepost.CodePost.dto.CodeEntityDTO;
 import com.codepost.CodePost.entity.CodeEntity;
 import com.codepost.CodePost.repository.CodeRepository;
 import com.codepost.CodePost.service.CodeService;
-import com.mongodb.client.MongoCollection;
 import org.bson.Document;
 import org.bson.types.Code;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,20 +11,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Sort;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.support.KafkaHeaders;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.*;
-import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 
+import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -49,6 +42,7 @@ class CodeServiceTest {
 
     @BeforeEach
     void setUp() {
+        MockitoAnnotations.openMocks(this);
         codeEntity = new CodeEntity();
         codeEntity.setCName("TestName");
         codeEntity.setVersion(1.0);
@@ -97,59 +91,33 @@ class CodeServiceTest {
     }
 
     @Test
-    void testGetAllLatestCodeWithoutStatus() throws InstantiationException, IllegalAccessException {
-        // Create a mock Document representing the CodeEntity
-        Document document = new Document("cName", codeEntity.getCName())
-                .append("version", codeEntity.getVersion())
-                .append("description", codeEntity.getDescription())
-                .append("startDate", codeEntity.getStartDate())
-                .append("endDate", codeEntity.getEndDate())
-                .append("isActive", codeEntity.isActive());
+    public void getAllLatestCodeTestWithoutStatus(){
 
-        // Wrap the document in AggregationResults
-        AggregationResults<Document> aggregationResults = new AggregationResults<>(List.of(document), Document.class.newInstance());
+        List<CodeEntity> codeEntities = Collections.singletonList(codeEntity);
 
-        // Mock MongoTemplate to return AggregationResults<Document>
-        when(mongoTemplate.aggregate(any(Aggregation.class), eq("codedetail"), eq(Document.class)))
-                .thenReturn(aggregationResults);
+        AggregationResults<CodeEntity> codeEntities1 = new AggregationResults<>(codeEntities,new Document());
 
-        // Call the service method
-        List<CodeEntity> result = codeService.getAllLatestCode("");
+        when(mongoTemplate.aggregate(any(Aggregation.class),eq("codedetail"),eq(CodeEntity.class))).thenReturn( codeEntities1);
 
-        // Assert the result
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        CodeEntity returnedCodeEntity = result.get(0);
-        assertEquals(codeEntity.getCName(), returnedCodeEntity.getCName());
-        assertEquals(codeEntity.getVersion(), returnedCodeEntity.getVersion());
-        assertEquals(codeEntity.getDescription(), returnedCodeEntity.getDescription());
-        assertEquals(codeEntity.getStartDate(), returnedCodeEntity.getStartDate());
-        assertEquals(codeEntity.getEndDate(), returnedCodeEntity.getEndDate());
-        assertEquals(codeEntity.isActive(), returnedCodeEntity.isActive());
+        assertEquals(codeEntities,codeService.getAllLatestCode(""));
+
+
     }
 
-//
-//    @Test
-//    void testGetAllLatestCodeWithStatus() {
-//        Aggregation aggregation = Aggregation.newAggregation(
-//                Aggregation.sort(Sort.by(Sort.Direction.DESC, "version")),
-//                Aggregation.group("cName")
-//                        .first("cName").as("cName")
-//                        .first("description").as("description")
-//                        .first("startDate").as("startDate")
-//                        .first("version").as("version")
-//                        .first("endDate").as("endDate")
-//                        .first("isActive").as("isActive"),
-//                Aggregation.match(Criteria.where("isActive").is(true))
-//        );
-//
-//        AggregationResults<CodeEntity> results = new AggregationResults<>(List.of(codeEntity), CodeEntity.class);
-//        when(mongoTemplate.aggregate(aggregation, "codedetail", CodeEntity.class)).thenReturn(results);
-//
-//        List<CodeEntity> result = codeService.getAllLatestCode("true");
-//
-//        assertNotNull(result);
-//        assertEquals(1, result.size());
-//        assertEquals(codeEntity.getCName(), result.get(0).getCName());
-//    }
+    @Test
+    public void getAllLatestCodeTestWithStatus(){
+
+        List<CodeEntity> codeEntities = Collections.singletonList(codeEntity);
+
+        AggregationResults<CodeEntity> codeEntities1 = new AggregationResults<>(codeEntities,new Document());
+
+        when(mongoTemplate.aggregate(any(Aggregation.class),eq("codedetail"),eq(CodeEntity.class))).thenReturn( codeEntities1);
+
+        assertEquals(codeEntities,codeService.getAllLatestCode("true"));
+
+
+    }
+
+
+
 }
