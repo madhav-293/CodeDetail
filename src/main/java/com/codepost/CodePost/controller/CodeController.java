@@ -6,6 +6,7 @@ import com.codepost.CodePost.service.CodeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -16,7 +17,7 @@ public class CodeController {
     CodeService codeService;
 
 
-    @PostMapping("/")
+    @PostMapping("/post")
     public CodeEntity addCode(@RequestBody CodeEntity codeEntity){
         return codeService.addCode(codeEntity);
     }
@@ -34,6 +35,11 @@ public class CodeController {
     @GetMapping("/getAllLatestCode")
     public List<CodeEntity> getAllLatestCode(@RequestParam("status") String status){
         return codeService.getAllLatestCode(status);
+    }
+
+    @GetMapping("/current-user")
+    public String getLoggedInUser(Principal principal){
+        return principal.getName(); //Principal is such a representation it represents the current user
     }
 
 }
